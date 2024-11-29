@@ -6,3 +6,8 @@ chmod +x switch_inventory_manager.py
 
 # Deploy 10 new switches
 ./switch_inventory_manager.py 10
+
+Run the below updates and install required packages
+sudo apt update
+sudo apt install ansible python3-pip
+pip3 install napalm netmiko
