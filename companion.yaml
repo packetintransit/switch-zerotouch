@@ -1,0 +1,32 @@
+- hosts: switches
+  gather_facts: no
+  vars:
+    management_vlan: 10
+    default_gateway: "10.127.151.254"
+
+  tasks:
+    - name: Configure Basic Switch Parameters
+      ios_config:
+        lines:
+          - hostname "{{ inventory_hostname }}"
+          - username admin privilege 15 secret your_secure_password
+          - ip domain-name company.local
+
+    - name: Configure Management IP
+      ios_config:
+        lines:
+          - interface Vlan{{ management_vlan }}
+          - ip address {{ ansible_host }}/25
+          - no shutdown
+
+    - name: Configure Default Gateway
+      ios_config:
+        lines:
+          - ip default-gateway {{ default_gateway }}
+
+    - name: Configure Trunk Ports
+      ios_config:
+        parents: "interface GigabitEthernet0/1"
+        lines:
+          - switchport mode trunk
+          - switchport trunk allowed vlan 10,51

@@ -1,0 +1,8 @@
+# Install dependencies
+sudo pip3 install pyyaml ipaddress
+
+# Make the script executable
+chmod +x switch_inventory_manager.py
+
+# Deploy 10 new switches
+./switch_inventory_manager.py 10

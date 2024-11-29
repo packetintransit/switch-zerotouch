@@ -1,0 +1,18 @@
+- hosts: new_switch
+  vars:
+    ansible_password: "{{ vault_switch_password }}"
+  tasks:
+    - name: Configure Secure SSH
+      ios_config:
+        lines:
+          - ip ssh authentication-retries 3
+          - ip ssh time-out 60
+          - login block-for 120 attempts 3 within 30
+
+    - name: Set Banner
+      ios_config:
+        lines:
+          - banner login ^
+            UNAUTHORIZED ACCESS PROHIBITED
+            All actions are logged and monitored
+            ^

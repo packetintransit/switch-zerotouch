@@ -1,0 +1,112 @@
+**************************************************************************************
+Recommended Initial Setup Workflow
+
+Out-of-Band Configuration
+
+Use console cable
+Perform initial configuration manually
+Ensure management VLAN is accessible
+Configure initial SSH parameters
+
+
+Ansible Preparation
+
+Verify network connectivity
+Ensure SSH is enabled
+Validate credentials
+Run connectivity verification playbook
+**************************************************************************************
+
+
+Initial Switch Configuration Prerequisites
+1. Console Access Configuration
+
+# Enter configuration mode
+switch> enable
+switch# configure terminal
+
+# Create management user
+username ansible privilege 15 secret StrongPassword123!
+
+# Enable SSH
+ip domain-name company.local
+crypto key generate rsa modulus 2048
+
+# SSH configuration
+line vty 0 4
+ transport input ssh
+ login local
+ exit
+
+2. Management VLAN Configuration
+
+# Configure VLAN 10 interface
+interface Vlan10
+ ip address 10.127.151.X 255.255.255.128
+ no shutdown
+ exit
+
+# Set default gateway
+ip default-gateway 10.127.151.254
+
+3. Basic Security Configurations
+
+# Disable unnecessary services
+no ip http server
+no ip http secure-server
+
+# Enable SSH v2
+ip ssh version 2
+
+# Set login timeout
+line vty 0 4
+ exec-timeout 10 5
+ exit
+
+
+
+
+ Ansible Connection Requirements
+SSH Key-Based Authentication
+
+1. Generate SSH Key on Ansible Control Node
+
+ssh-keygen -t rsa -b 4096
+
+2. Copy SSH Public Key to Switch
+
+# Method 1: Manual Copy
+# Copy the contents of ~/.ssh/id_rsa.pub to the switch's authorized_keys
+
+# Method 2: If SSH is already configured
+ssh-copy-id -i ~/.ssh/id_rsa.pub admin@10.127.151.X
+
+Ansible Inventory Configuration
+
+# /etc/ansible/hosts
+all:
+  children:
+    switches:
+      hosts:
+        new_switch:
+          ansible_host: 10.127.151.X
+          ansible_network_os: ios
+          ansible_connection: network_cli
+          ansible_user: ansible
+          ansible_ssh_pass: StrongPassword123!
+          # OR for key-based auth
+          # ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+Verification Playbook
+
+- hosts: new_switch
+  gather_facts: no
+  tasks:
+    - name: Verify SSH Connectivity
+      ios_command:
+        commands:
+          - show version
+      register: version_output
+
+    - debug:
+        var: version_output
